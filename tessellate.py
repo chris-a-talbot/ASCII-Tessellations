@@ -25,7 +25,7 @@ rot180 = {
 
 # Converts a set of strings to a matrix of each individual character, based on a predefined matrix size
 def to_matrix(pattern, size):
-    matrix = np.chararray((int(size), int(size)),unicode=True)
+    matrix = np.chararray((size, size),unicode=True)
     for index_r, row in enumerate(pattern):
         for index_c, column in enumerate(row):
             matrix[index_r][index_c] = column
@@ -34,12 +34,12 @@ def to_matrix(pattern, size):
 # Changes characters in a matrix to their rotated versions by:
 # Iterating through the matrix; testing each character to see if it is in a rotation dictionary; if it is, setting it to its rotated version
 def rotate_characters(matrix, degrees):
-    if degrees == 180:
+    if degrees % 180 == 0:
         for index_o, object in enumerate(matrix):
             for index_i, item in enumerate(object):
                 if item in rot180:
                     matrix[index_o][index_i] = rot180.get(item)
-    elif degrees == 90:
+    elif degrees % 90 == 0:
         for index_o, object in enumerate(matrix):
             for index_i, item in enumerate(object):
                 if item in rot90:
@@ -62,13 +62,33 @@ def rotate(matrix, degrees):
 # Takes user input. Data variable takes: Rotation in degrees, size of the square matrix, and the pattern of the matrix. Repeat takes the number of times to repeat the process.
 # This part is a WIP.
 def tessellate(data, repeat):
+
     rotation, size, *pattern = data.split("\n")
-    matrix = rotate(rotate_characters(to_matrix(pattern, size), 90), 90)
-    return
+    rotation = int(rotation)
+    size = int(size)
+
+    final_matrix = None
+
+    # Each repeat will require a total of 4 matrixes to be combined, consisting of the original, two of the normal rotation, and one of the rotation * 2.
+    # This loop should eventually make it possible to repeat this process as many times as desired with increasingly large matrices.
+    # Currently, it only gathers the 3 unique necessary matrices for one repeat.
+    for i in range(1, repeat+1):
+
+        matrix_1 = to_matrix(pattern, size)
+        matrix_2 = rotate(rotate_characters(to_matrix(pattern, size), rotation), rotation)
+        matrix_3 = rotate(rotate_characters(to_matrix(pattern, size), rotation*2), rotation*2)
+
+    return final_matrix
 
 tessellate("""90
 4
 ####
 #--#
 #++#
-####""", 1)
+####""", 2)
+
+#    0 deg |  +90 deg | +180 deg
+# ------------------------------
+#  +90 deg | +180 deg | +270 deg
+# ------------------------------
+# +180 deg | +270 deg |    0 deg
