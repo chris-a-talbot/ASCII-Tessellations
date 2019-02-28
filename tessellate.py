@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 # Dictionary with the 90 degree turned version of applicable ascii characters
 rot90 = {
@@ -34,16 +35,17 @@ def to_matrix(pattern, size):
 # Changes characters in a matrix to their rotated versions by:
 # Iterating through the matrix; testing each character to see if it is in a rotation dictionary; if it is, setting it to its rotated version
 def rotate_characters(matrix, degrees):
-    if degrees % 180 == 0:
-        for index_o, object in enumerate(matrix):
-            for index_i, item in enumerate(object):
-                if item in rot180:
-                    matrix[index_o][index_i] = rot180.get(item)
-    elif degrees % 90 == 0:
-        for index_o, object in enumerate(matrix):
-            for index_i, item in enumerate(object):
-                if item in rot90:
-                    matrix[index_o][index_i] = rot90.get(item)
+    if degrees % 360 != 0:
+        if degrees % 180 == 0:
+            for index_o, object in enumerate(matrix):
+                for index_i, item in enumerate(object):
+                    if item in rot180:
+                        matrix[index_o][index_i] = rot180.get(item)
+        elif degrees % 90 == 0:
+            for index_o, object in enumerate(matrix):
+                for index_i, item in enumerate(object):
+                    if item in rot90:
+                        matrix[index_o][index_i] = rot90.get(item)
     return matrix
 
 # Takes a matrix (in this case, a numpy chararray and rotates it given degrees)
@@ -77,18 +79,21 @@ def tessellate(data, repeat):
         matrix_1 = to_matrix(pattern, size)
         matrix_2 = rotate(rotate_characters(to_matrix(pattern, size), rotation), rotation)
         matrix_3 = rotate(rotate_characters(to_matrix(pattern, size), rotation*2), rotation*2)
+        top_matrix = np.hstack((matrix_1, matrix_2))
+        bottom_matrix = np.hstack((matrix_2, matrix_3))
+        final_matrix = np.vstack((top_matrix, bottom_matrix))
 
-    return final_matrix
+    # Takes the combined matrix (of four matrices * number of repeats) and prints it out as a string separated by new lines
+    for item in final_matrix:
+        stri = ''.join(str(r) for r in item)
+        print(stri)
 
+#Example command
+# NOTE - Negative degrees are not currently functional
 tessellate("""90
-4
-####
-#--#
-#++#
-####""", 2)
-
-#    0 deg |  +90 deg | +180 deg
-# ------------------------------
-#  +90 deg | +180 deg | +270 deg
-# ------------------------------
-# +180 deg | +270 deg |    0 deg
+5
+^^^^^
+^|||^
+^|||^
+^|||^
+^^^^^""", 1)
