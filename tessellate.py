@@ -67,33 +67,51 @@ def tessellate(data, repeat):
 
     rotation, size, *pattern = data.split("\n")
     rotation = int(rotation)
+    if rotation <= 0:
+        directionality = 'negative'
+    else:
+        directionality = 'positive'
     size = int(size)
 
     final_matrix = None
+    new_pattern = []
+    new_size = size
 
     # Each repeat will require a total of 4 matrixes to be combined, consisting of the original, two of the normal rotation, and one of the rotation * 2.
-    # This loop should eventually make it possible to repeat this process as many times as desired with increasingly large matrices.
-    # Currently, it only gathers the 3 unique necessary matrices for one repeat.
+    # The current issue with this system is that it rotates the entire previous matrix, so its an exponential tessellation instead of being linear
     for i in range(1, repeat+1):
 
-        matrix_1 = to_matrix(pattern, size)
-        matrix_2 = rotate(rotate_characters(to_matrix(pattern, size), rotation), rotation)
-        matrix_3 = rotate(rotate_characters(to_matrix(pattern, size), rotation*2), rotation*2)
+        if i == 1:
+            final_matrix = to_matrix(pattern, size)
+            new_pattern = pattern
+            new_size = size
+
+        matrix_1 = final_matrix
+        matrix_2 = rotate(rotate_characters(to_matrix(new_pattern, new_size), rotation), rotation)
+        matrix_3 = rotate(rotate_characters(to_matrix(new_pattern, new_size), rotation*2), rotation*2)
         top_matrix = np.hstack((matrix_1, matrix_2))
         bottom_matrix = np.hstack((matrix_2, matrix_3))
         final_matrix = np.vstack((top_matrix, bottom_matrix))
 
-    # Takes the combined matrix (of four matrices * number of repeats) and prints it out as a string separated by new lines
+        new_pattern = []
+
+        for item in final_matrix:
+            stri = ''.join(str(r) for r in item)
+            new_pattern.append(stri)
+
+        new_size *= 2
+
     for item in final_matrix:
-        stri = ''.join(str(r) for r in item)
+        stri = ''.join(str(c) for c in item)
         print(stri)
 
 #Example command
 # NOTE - Negative degrees are not currently functional
 tessellate("""90
-5
-^^^^^
-^|||^
-^|||^
-^|||^
-^^^^^""", 1)
+6
+/\\-/|-
+/\\/-\\/
+||\\\\-\\
+|\\|-|/
+|-\\|/|
+|\\-/-\\""", 4)
